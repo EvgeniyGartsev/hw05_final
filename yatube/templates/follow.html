@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% load thumbnail %}
+{% block title %}Последние обновления на сайте{% endblock %}
+{% block header %}Последние обновления на сайте{% endblock %}
+{% block content %}
+  <div class="container">
+    {% include "includes/menu.html" with follow=True %}
+  <!--Кэшируем часть страницы-->
+    {% for post in page %}
+      {% load cache %}
+      {% cache 20 follow_page %}
+        {% include "includes/post_item.html" with post=post author_name=post.author.username %}
+      {% endcache %}
+    {% endfor %}
+        <!--встраиваем шаблон пагинатора для навигации по страницам--> 
+        {% include "includes/paginator.html" %}
+    </div>
+{% endblock %}

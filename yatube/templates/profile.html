@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% load thumbnail %}
+{% block title %}  Записи пользователя  {{ author_name.username }}  {% endblock %}
+{% block header %}  {{ author_name.get_full_name }}  {% endblock %}
+{% block content %}
+
+<main role="main" class="container">
+    <div class="row">
+      <div class="col-md-3 mb-3 mt-1">
+        {% include "includes/card_author.html" %}
+      </div>
+       <div class="col-md-9">
+       {% for post in page %}
+         {% include "includes/post_item.html" with post=post %}
+          <!-- Конец блока с отдельным постом -->
+          <!-- Остальные посты -->
+        {% endfor %} 
+       <!-- Здесь постраничная навигация паджинатора -->
+       <!--встраиваем шаблон пагинатора для навигации по страницам--> 
+        {% include "includes/paginator.html" %}
+       </div>
+    </div>
+  </main>
+
+{% endblock %}
