@@ -19,14 +19,16 @@
         <div class="btn-group">
           <!-- Ссылка на редактирование, показывается только автору записи.
           Эту ссылку вы подключите в финальном задании спринта -->
-          {% if post.author == user %}
-            <a class="btn btn-sm text-muted" href="{% url 'post_edit' user.username post.id %}" role="button">
-              Редактировать
-            </a>
-          {% else %}
-            <a class="btn btn-sm text-muted" href="{% url 'post' post.author.username post.id %}" role="button">
-              Добавить комментарий
-            </a>
+          {% if user.is_authenticated %}
+            {% if post.author == user %}
+              <a class="btn btn-sm text-muted" href="{% url 'post_edit' user.username post.id %}" role="button">
+                Редактировать
+              </a>
+            {% else %}
+              <a class="btn btn-sm text-muted" href="{% url 'post' post.author.username post.id %}" role="button">
+                Добавить комментарий
+              </a>
+            {% endif %}
           {% endif %}
         </div>
         <!-- Дата публикации  -->

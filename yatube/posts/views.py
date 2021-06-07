@@ -68,20 +68,27 @@ def profile(request, username):
     page_number = request.GET.get('page')
     # получем записи для запрошенной страницы
     page = paginator.get_page(page_number)
-    # проверяем подписку текущего пользователя на автора
-    # если не подписан, то выводим кнопку подписаться
-    following = Follow.objects.filter(
-        user=User.objects.get(username=request.user),
-        author=User.objects.get(username=username)).exists()
+    # отображение кнопки подписаться если не подписан
+    is_followed = False
+    if request.user.is_authenticated:
+        is_followed = Follow.objects.filter(
+            user=User.objects.get(username=request.user),
+            author=User.objects.get(username=username)).exists()
     # проверяем что пользователь не является автором, чтобы
     # не показывать ему кнопку подписки
     is_author = author_name.username == request.user
+    # получаем кол-во подписчиков пользователя
+    follower_count = Follow.objects.filter(author__username=username).count()
+    # получаю количество авторов, на которых подписан пользователь
+    following_count = Follow.objects.filter(user__username=username).count()
     return render(request, "profile.html",
                   {"page": page,
                    "posts_count": user_posts.count(),
                    "author_name": author_name,
-                   "following": following,
+                   "is_followed": is_followed,
                    "is_author": is_author,
+                   "follower_count": follower_count,
+                   "following_count": following_count,
                    })
 
 
@@ -190,7 +197,7 @@ def add_comment(request, username, post_id):
             record.post = Post.objects.get(id=post_id)
             record.author = User.objects.get(username=request.user)
             record.save()
-            return redirect("post", username=username, post_id=post_id)
+        return redirect("post", username=username, post_id=post_id)
 
 
 @login_required(login_url="login")

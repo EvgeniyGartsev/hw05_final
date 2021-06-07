@@ -11,9 +11,9 @@
     </div>
     <ul class="list-group list-group-flush">
       <li class="list-group-item">
-        <!-- не показываем кнопку если пользователь является автором -->
-        {% if author_name.username != user.username %}
-          {% if following %}
+        <!-- не показываем кнопку если пользователь является автором или не зарегистрирован -->
+        {% if author_name.username != user.username and user.is_authenticated %}
+          {% if is_followed %}
             <a class="btn btn-lg btn-light" href="{% url 'profile_unfollow' author_name.username %}" role="button">
               Отписаться
             </a>
@@ -24,8 +24,8 @@
           {% endif %}
         {% endif %}
         <div class="h6 text-muted">
-          Подписчиков: XXX <br />
-          Подписан: XXX
+          Подписчиков: {{ follower_count }} <br />
+          Подписан: {{ following_count }}
         </div>
       </li>
       <li class="list-group-item">

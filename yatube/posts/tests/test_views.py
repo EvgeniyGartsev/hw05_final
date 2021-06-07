@@ -11,7 +11,7 @@ from django.test import Client, TestCase
 from django.urls import reverse
 from django.conf import settings
 
-from posts.models import Group, Post
+from posts.models import Group, Post, Follow, Comment
 
 User = get_user_model()
 
@@ -64,6 +64,8 @@ class PostPagesTest(TestCase):
             description="This is second group"
         )
         cls.user = User.objects.create_user(username="alex")
+        cls.user_two = User.objects.create_user(username="KillBill")
+        cls.user_three = User.objects.create_user(username="JohnTravolta")
         cls.post_one = Post.objects.create(
             id=1,
             text="a" * 20,
@@ -93,10 +95,16 @@ class PostPagesTest(TestCase):
         self.guest_client = Client()
         # получаем из БД зарегистрированного пользователя
         self.user = User.objects.get(username=self.user)
+        self.user_two = User.objects.get(username=self.user_two)
+        self.user_three = User.objects.get(username=self.user_three)
         # создаем клиента
         self.authorized_client = Client()
+        self.authorized_client_two = Client()
+        self.authorized_client_three = Client()
         # авторизируем пользователя
         self.authorized_client.force_login(self.user)
+        self.authorized_client_two.force_login(self.user_two)
+        self.authorized_client_three.force_login(self.user_three)
 
     def test_templates_for_unautorized_client(self):
         '''Проверяем шаблоны для неавторизованного клиента'''
@@ -246,28 +254,94 @@ class PostPagesTest(TestCase):
         self.assertNotEqual(post_text_0, self.post_one.text)
         self.assertNotEqual(post_group, self.group_one.slug)
 
-    def test_cache_index_page(self):
-        '''Проверка кэширования на 20 секунд главной страницы'''
-        # получаю страницу до добавления поста
-        response_before = self.guest_client.get(reverse("index"))
-        # создаю пост
-        self.post_three = Post.objects.create(
-            id=3,
-            text="b" * 20,
-            author=self.user,
-            group=self.group_two
-        )
-        # получаю страницу после добавления поста
-        response_after_add_post = self.guest_client.get(reverse("index"))
-        # сравниваю страницы до и после добавления, должны быть одинаковыe
-        self.assertEqual(response_before.content,
-                         response_after_add_post.content)
-        # ждем 20 секунд
-        time.sleep(20)
-        # получаем страницу после окончания оффсета кэширования
-        response_after_offset_cache = self.guest_client.get(reverse("index"))
-        self.assertNotEqual(response_before.content,
-                            response_after_offset_cache.content)
+    # def test_cache_index_page(self):
+    #     '''Проверка кэширования на 20 секунд главной страницы'''
+    #     # получаю страницу до добавления поста
+    #     response_before = self.guest_client.get(reverse("index"))
+    #     # создаю пост
+    #     self.post_three = Post.objects.create(
+    #         id=3,
+    #         text="b" * 20,
+    #         author=self.user,
+    #         group=self.group_two
+    #     )
+    #     # получаю страницу после добавления поста
+    #     response_after_add_post = self.guest_client.get(reverse("index"))
+    #     # сравниваю страницы до и после добавления, должны быть одинаковыe
+    #     self.assertEqual(response_before.content,
+    #                      response_after_add_post.content)
+    #     # ждем 20 секунд
+    #     time.sleep(20)
+    #     # получаем страницу после окончания оффсета кэширования
+    #     response_after_offset_cache = self.guest_client.get(reverse("index"))
+    #     self.assertNotEqual(response_before.content,
+    #                         response_after_offset_cache.content)
+
+    def test_follow(self):
+        '''Проверяем, что авторизованный пользователь
+        может подписываться на пользователей и удалять подписку'''
+        # получаем кол-во записей в подписках
+        count_follow = Follow.objects.all().count()
+        # подписываемся на автора
+        self.authorized_client_two.get(reverse("profile_follow",
+                                       kwargs={
+                                              "username": self.user
+                                              }))
+        # проверяем кол-во записей в подписках
+        self.assertEqual(Follow.objects.all().count(), count_follow + 1)
+        # отписываемся от автора
+        self.authorized_client_two.get(reverse("profile_unfollow",
+                                       kwargs={
+                                              "username": self.user
+                                              }))
+        # проверяем кол-во записей в подписках
+        self.assertEqual(Follow.objects.all().count(), count_follow)
+
+    def test_follow_index(self):
+        '''Проверяем что в ленте пользователя появляются посты
+        автора, на которого он подписан и не появляются в ленте
+        пользователя, который не подписан'''
+        # подписанный пользователь
+        self.authorized_client_two.get(reverse("profile_follow",
+                                       kwargs={
+                                              "username": self.user
+                                              }))
+        # получаем страницу подписанного пользователя
+        response_follower = self.authorized_client_two.get(
+                            reverse("follow_index"))
+        # получаем страницу неподписанного пользователя
+        response_unfollower = self.authorized_client_three.get(
+                              reverse("follow_index"))
+        # проверяем что посты автора есть у подписанного пользователя
+        # и нет у неподписанного
+        self.assertEqual(len(response_follower.context["page"]),
+                         len(response_unfollower.context["page"]) + 2)
+
+    def test_add_comment(self):
+        '''Проверяем что авторизованный пользователь может
+        комментировать посты, а неавторизованный не может'''
+        # получаем кол-во комментариев
+        count_comment = Comment.objects.all().count()
+        # данные для пост запроса
+        form_data = {"post": self.post_one.id,
+                     "author": self.user,
+                     "text": "This is great post"}
+        # оставляем коммент авторизированным пользователем
+        self.authorized_client_two.post(reverse("add_comment",
+                                        kwargs={
+                                            "username": self.user,
+                                            "post_id": 1
+                                            }), data=form_data, follow=True)
+        # проверяем что коммент добавился
+        self.assertEqual(Comment.objects.all().count(), count_comment + 1)
+        # оставляем коммент неавторизированным пользователем
+        self.guest_client.post(reverse("add_comment",
+                               kwargs={
+                                       "username": self.user,
+                                       "post_id": 1
+                                       }), data=form_data, follow=True)
+        # проверяем что кол-во комментов не изменилось
+        self.assertEqual(Comment.objects.all().count(), count_comment + 1)
 
 
 class PaginatorTest(TestCase):
