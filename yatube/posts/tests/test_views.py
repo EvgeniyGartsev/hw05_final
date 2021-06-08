@@ -286,15 +286,15 @@ class PostPagesTest(TestCase):
         # подписываемся на автора
         self.authorized_client_two.get(reverse("profile_follow",
                                        kwargs={
-                                              "username": self.user
-                                              }))
+                                               "username": self.user
+                                               }))
         # проверяем кол-во записей в подписках
         self.assertEqual(Follow.objects.all().count(), count_follow + 1)
         # отписываемся от автора
         self.authorized_client_two.get(reverse("profile_unfollow",
                                        kwargs={
-                                              "username": self.user
-                                              }))
+                                               "username": self.user
+                                               }))
         # проверяем кол-во записей в подписках
         self.assertEqual(Follow.objects.all().count(), count_follow)
 
@@ -305,14 +305,14 @@ class PostPagesTest(TestCase):
         # подписанный пользователь
         self.authorized_client_two.get(reverse("profile_follow",
                                        kwargs={
-                                              "username": self.user
-                                              }))
+                                               "username": self.user
+                                               }))
         # получаем страницу подписанного пользователя
-        response_follower = self.authorized_client_two.get(
-                            reverse("follow_index"))
+        response_follower = (self.authorized_client_two.get(
+                             reverse("follow_index")))
         # получаем страницу неподписанного пользователя
-        response_unfollower = self.authorized_client_three.get(
-                              reverse("follow_index"))
+        response_unfollower = (self.authorized_client_three.get(
+                               reverse("follow_index")))
         # проверяем что посты автора есть у подписанного пользователя
         # и нет у неподписанного
         self.assertEqual(len(response_follower.context["page"]),
@@ -332,7 +332,7 @@ class PostPagesTest(TestCase):
                                         kwargs={
                                             "username": self.user,
                                             "post_id": 1
-                                            }), data=form_data, follow=True)
+                                        }), data=form_data, follow=True)
         # проверяем что коммент добавился
         self.assertEqual(Comment.objects.all().count(), count_comment + 1)
         # оставляем коммент неавторизированным пользователем
