@@ -182,7 +182,7 @@ def post_edit(request, username, post_id):
         return render(request, "post_new_edit.html",
                       {"form": form, "is_edit_post": is_edit_post})
     return render(request, "post_new_edit.html",
-                  {"form": form, "post_id": post_for_edit.id,
+                  {"form": form, "post": post_for_edit,
                    "is_edit_post": is_edit_post})
 
 
@@ -215,15 +215,21 @@ def follow_index(request):
     return render(request, "follow.html", {"page": page})
 
 
-@login_required
+@login_required(login_url="login")
 def profile_follow(request, username):
     '''Подписка на автора'''
-    Follow(user=User.objects.get(username=request.user),
-           author=User.objects.get(username=username)).save()
+    # проверяем что можно подписаться на автора один раз
+    is_followed = Follow.objects.filter(
+        user=User.objects.get(username=request.user),
+        author=User.objects.get(username=username)).exists()
+    # пользователь не может подписаться на самого себя
+    if request.user.username != username and not is_followed:
+        Follow(user=User.objects.get(username=request.user),
+               author=User.objects.get(username=username)).save()
     return redirect("profile", username=username)
 
 
-@login_required
+@login_required(login_url="login")
 def profile_unfollow(request, username):
     '''Удаление подписки на автора'''
     Follow.objects.get(user=User.objects.get(username=request.user),

@@ -10,6 +10,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase
 from django.urls import reverse
 from django.conf import settings
+from django.core.cache import cache
 
 from posts.models import Group, Post, Follow, Comment
 
@@ -254,28 +255,28 @@ class PostPagesTest(TestCase):
         self.assertNotEqual(post_text_0, self.post_one.text)
         self.assertNotEqual(post_group, self.group_one.slug)
 
-    # def test_cache_index_page(self):
-    #     '''Проверка кэширования на 20 секунд главной страницы'''
-    #     # получаю страницу до добавления поста
-    #     response_before = self.guest_client.get(reverse("index"))
-    #     # создаю пост
-    #     self.post_three = Post.objects.create(
-    #         id=3,
-    #         text="b" * 20,
-    #         author=self.user,
-    #         group=self.group_two
-    #     )
-    #     # получаю страницу после добавления поста
-    #     response_after_add_post = self.guest_client.get(reverse("index"))
-    #     # сравниваю страницы до и после добавления, должны быть одинаковыe
-    #     self.assertEqual(response_before.content,
-    #                      response_after_add_post.content)
-    #     # ждем 20 секунд
-    #     time.sleep(20)
-    #     # получаем страницу после окончания оффсета кэширования
-    #     response_after_offset_cache = self.guest_client.get(reverse("index"))
-    #     self.assertNotEqual(response_before.content,
-    #                         response_after_offset_cache.content)
+    def test_cache_index_page(self):
+        '''Проверка кэширования на 20 секунд главной страницы'''
+        # получаю страницу до добавления поста
+        response_before = self.guest_client.get(reverse("index"))
+        # создаю пост
+        self.post_three = Post.objects.create(
+            id=3,
+            text="b" * 20,
+            author=self.user,
+            group=self.group_two
+        )
+        # получаю страницу после добавления поста
+        response_after_add_post = self.guest_client.get(reverse("index"))
+        # сравниваю страницы до и после добавления, должны быть одинаковыe
+        self.assertEqual(response_before.content,
+                         response_after_add_post.content)
+        # очищаем кэш
+        cache.clear()
+        response_after_clear_cache = self.guest_client.get(reverse("index"))
+        # снова сравниваем страницы, должны быть разные
+        self.assertNotEqual(response_before.content,
+                            response_after_clear_cache.content)
 
     def test_follow(self):
         '''Проверяем, что авторизованный пользователь

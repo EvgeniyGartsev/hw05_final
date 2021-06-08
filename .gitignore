@@ -2,9 +2,17 @@
 __pycache__/
 *.py[cod]
 *$py.class
-
+venv
 # C extensions
 *.so
+yatube/__pycache__
+yatube/htmlcov
+yatube/media
+yatube/sent_emails
+yatube/static
+yatube/db.sqlite3
+yatube/posts/static
+yatube/posts/__pycache__
 
 # Distribution / packaging
 .Python

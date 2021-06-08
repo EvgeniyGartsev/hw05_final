@@ -10,7 +10,7 @@
             <!--если мы находимся на странице редактирования, то меняем надпись на  "Редактировать запись"-->
             <div class="card-header">{% if is_edit_post %}Редактировать запись{% else %}Добавить запись{% endif %}</div>
             <div class="card-body">
-                <form method="post" enctype="multipart/form-data" action={% if is_edit_post %}"{% url 'post_edit' user.username post_id %}"{% else %}"{% url 'new_post' %}"{% endif %}>
+                <form method="post" enctype="multipart/form-data" action={% if is_edit_post %}"{% url 'post_edit' user.username post.id %}"{% else %}"{% url 'new_post' %}"{% endif %}>
                     {% csrf_token %}
                     {% for field in form %}
                         <div class="form-group row" aria-required={% if field.field.required %}"true"{% else %}"false"{% endif %}>
