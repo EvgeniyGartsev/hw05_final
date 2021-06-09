@@ -45,9 +45,8 @@ def profile(request, username):
     # отображение кнопки подписаться если не подписан
     is_followed = False
     if request.user.is_authenticated:
-        is_followed = Follow.objects.filter(
-            user=User.objects.get(username=request.user),
-            author=User.objects.get(username=username)).exists()
+        is_followed = Follow.objects.filter(user=request.user,
+                                            author__username=username).exists()
     # не показываем автору кнопку подписки
     is_author = author_name.username == request.user
     # получаем кол-во подписчиков пользователя
@@ -143,7 +142,7 @@ def add_comment(request, username, post_id):
 def follow_index(request):
     '''Вывод постов тех авторов, на которых подписан пользователь'''
     # получаем все посты авторов, на которых подписан пользователь
-    posts = Post.objects.filter(author__follower__user__username=request.user)
+    posts = Post.objects.filter(author__following__user=request.user)
     paginator = Paginator(posts, POST_NUMBER)
     page_number = request.GET.get("page")
     page = paginator.get_page(page_number)
@@ -154,21 +153,22 @@ def follow_index(request):
 def profile_follow(request, username):
     '''Подписка на автора'''
     # проверяем что можно подписаться на автора один раз
-    is_followed = Follow.objects.filter(
-        user=User.objects.get(username=request.user),
-        author=User.objects.get(username=username)).exists()
+    author = get_object_or_404(User, username=username)
+    is_followed = Follow.objects.filter(user=request.user,
+                                        author__username=username).exists()
     # пользователь не может подписаться на самого себя
     if request.user.username != username and not is_followed:
-        Follow(user=User.objects.get(username=request.user),
-               author=User.objects.get(username=username)).save()
+        Follow(user=request.user,
+               author=author).save()
     return redirect("profile", username=username)
 
 
 @login_required(login_url="login")
 def profile_unfollow(request, username):
     '''Удаление подписки на автора'''
-    Follow.objects.get(user=User.objects.get(username=request.user),
-                       author=User.objects.get(username=username)).delete()
+    author = get_object_or_404(User, username=username)
+    follow = get_object_or_404(Follow, user=request.user, author=author)
+    follow.delete()
     return redirect("profile", username=username)
 
 
