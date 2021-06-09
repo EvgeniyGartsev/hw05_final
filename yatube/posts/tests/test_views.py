@@ -280,7 +280,20 @@ class PostPagesTest(TestCase):
 
     def test_follow(self):
         '''Проверяем, что авторизованный пользователь
-        может подписываться на пользователей и удалять подписку'''
+        может подписываться на пользователей'''
+        # получаем кол-во записей в подписках
+        count_follow = Follow.objects.all().count()
+        # подписываемся на автора
+        self.authorized_client_two.get(reverse("profile_follow",
+                                       kwargs={
+                                               "username": self.user
+                                               }))
+        # проверяем кол-во записей в подписках
+        self.assertEqual(Follow.objects.all().count(), count_follow + 1)
+
+    def test_unfollow(self):
+        '''Проверяем, что авторизованный пользователь
+        может удалять подписку'''
         # получаем кол-во записей в подписках
         count_follow = Follow.objects.all().count()
         # подписываемся на автора

@@ -1,5 +1,3 @@
-# импортируем форму на основе которой
-# будем делать свою форму
 from django import forms
 from django.forms import ModelForm
 

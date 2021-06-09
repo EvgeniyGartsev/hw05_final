@@ -7,12 +7,10 @@ User = get_user_model()
 
 class Post(models.Model):
     '''Add posts'''
-    # сначала идут поля модели, затем класс мета
     text = models.TextField()
     pub_date = models.DateTimeField("date_published", auto_now_add=True)
     author = models.ForeignKey(User, on_delete=models.CASCADE,
                                related_name="posts")
-    # on_delete=models.SET_NULL - after delete group, set null in post
     group = models.ForeignKey("Group", blank=True, null=True,
                               related_name="group", on_delete=models.SET_NULL)
     image = models.ImageField(upload_to="posts/", blank=True, null=True)
@@ -30,8 +28,7 @@ class Post(models.Model):
 
 
 class Group(models.Model):
-    '''Model for add group in post.
-    One post has only one group. One group has many posts'''
+    '''Groups for posts'''
     title = models.CharField(max_length=200)
     slug = models.SlugField(unique=True, max_length=20)
     description = models.TextField()
@@ -68,7 +65,7 @@ class Comment(models.Model):
 
 
 class Follow(models.Model):
-    '''Подписчики и авторы'''
+    '''Followers and authors'''
     user = models.ForeignKey(User, on_delete=CASCADE,
                              related_name="follower")
     author = models.ForeignKey(User, on_delete=CASCADE,
@@ -79,3 +76,8 @@ class Follow(models.Model):
         ordering = ("id",)
         verbose_name = "подписчик"
         verbose_name_plural = "подписчики"
+        # проверка на уникальность подписки
+        constraints = [
+            models.UniqueConstraint(fields=['user', 'author'],
+                                    name="unique_follow")
+        ]
