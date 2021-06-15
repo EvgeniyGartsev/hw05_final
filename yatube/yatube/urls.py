@@ -17,9 +17,8 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
-# импортируем view функции, которые обрабатывают
-# ошибки 404 и 500
-from django.conf.urls import handler404, handler500
+from django.conf.urls import handler404, handler500, url
+from django.views.generic import RedirectView
 
 from posts import views
 
@@ -29,6 +28,7 @@ handler500 = "posts.views.server_error"  # noqa
 
 
 urlpatterns = [
+    url(r'^favicon\.ico$', RedirectView.as_view(url='/static/images/favicon.ico'), name='favicon'),
     path("admin/", admin.site.urls),
     # authentifications
     path("auth/", include("users.urls")),

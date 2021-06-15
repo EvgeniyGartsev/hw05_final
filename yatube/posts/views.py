@@ -81,14 +81,15 @@ def post_view(request, username, post_id):
 @login_required(login_url="login")
 def new_post(request):
     '''Add new posts'''
-    form = PostForm(request.POST or None)
+    form = PostForm(request.POST or None, files=request.FILES or None)
     # показ кнопок редактировать/добавить пост
     is_edit_post = False
     if form.is_valid():
+        print(form.cleaned_data)
         post = Post(text=form.cleaned_data["text"],
-                    author=User.objects.get(
-                    username=request.user.get_username()),
-                    group=form.cleaned_data["group"])
+                    author=request.user,
+                    group=form.cleaned_data["group"],
+                    image=form.cleaned_data["image"],)
         post.save()
         return HttpResponseRedirect(reverse("index"))
     return render(request, "post_new_edit.html",
