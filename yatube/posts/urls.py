@@ -16,6 +16,8 @@ urlpatterns = [
          name="profile_unfollow"),
     # страница постов группы
     path("group/<slug:slug>/", views.group_posts, name="group_posts"),
+    # страница групп
+    path("groups/", views.groups, name="groups"),
     # страничка пользователя
     path("<str:username>/", views.profile, name="profile"),
     # просмотр поста пользователя

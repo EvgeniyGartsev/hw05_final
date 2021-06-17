@@ -66,16 +66,30 @@ def profile(request, username):
 
 def post_view(request, username, post_id):
     '''Show one user post'''
+    author_name = get_object_or_404(User, username=username)
     post = get_object_or_404(Post, author__username=username, id=post_id)
     posts_count = Post.objects.filter(author__username=username).count()
     form = CommentForm(request.POST or None)
     comments = Comment.objects.filter(post__id=post_id)
+    # получаем кол-во подписчиков пользователя
+    follower_count = Follow.objects.filter(author__username=username).count()
+    # получаю количество авторов, на которых подписан пользователь
+    following_count = Follow.objects.filter(user__username=username).count()
+    # отображение кнопки подписаться если не подписан
+    is_followed = False
+    if request.user.is_authenticated:
+        is_followed = Follow.objects.filter(user=request.user,
+                                            author__username=username).exists()
     return render(request, "post_view.html",
                   {"post": post,
                    "posts_count": posts_count,
-                   "author_name": post.author,
+                   "author_name": author_name,
                    "form": form,
-                   "comments": comments})
+                   "comments": comments,
+                   "is_followed": is_followed,
+                   "follower_count": follower_count,
+                   "following_count": following_count,
+                   })
 
 
 @login_required(login_url="login")
@@ -171,6 +185,16 @@ def profile_unfollow(request, username):
     follow = get_object_or_404(Follow, user=request.user, author=author)
     follow.delete()
     return redirect("profile", username=username)
+
+
+def groups(request):
+    '''Show groups'''
+    groups = get_list_or_404(Group)
+    print(groups)
+    paginator = Paginator(groups, POST_NUMBER)
+    page_number = request.GET.get('page')
+    page = paginator.get_page(page_number)
+    return render(request, "groups.html", {"page": page})
 
 
 def page_not_found(request, exception=None):
