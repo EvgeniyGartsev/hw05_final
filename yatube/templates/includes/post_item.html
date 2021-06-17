@@ -9,32 +9,40 @@
         <!-- Ссылка на страницу автора в атрибуте href; username автора в тексте ссылки -->
         <a href="{% url 'profile' post.author.username %}">
           <strong class="d-block text-gray-dark">
-              {{ post.author.username }}
+              @{{ post.author.username }}
           </strong>
         </a>
         <!-- Текст поста -->
         {{ post.text|linebreaksbr }}
       </p>
       <!--Ссылка на страницу группы-->
+      {% if post.group.slug %}
       <a class="card-link muted" href="{% url 'group_posts' post.group.slug %}">
-        <strong class="d-block text-gray-dark">{{ post.group }}</strong>
+        <strong class="d-block text-gray-dark">#{{ post.group }}</strong>
       </a>
-      <div class="d-flex justify-content-between align-items-center">
-        <div class="btn-group">
-          <!-- Ссылка на редактирование, показывается только автору записи.
-          Эту ссылку вы подключите в финальном задании спринта -->
-          {% if user.is_authenticated %}
-            {% if post.author == user %}
-              <a class="btn btn-sm text-muted" href="{% url 'post_edit' user.username post.id %}" role="button">
-                Редактировать
-              </a>
-            {% else %}
-              <a class="btn btn-sm text-muted" href="{% url 'post' post.author.username post.id %}" role="button">
-                Добавить комментарий
-              </a>
-            {% endif %}
-          {% endif %}
+      {% endif %}
+      <div class="container overflow-hidden">
+        <div class="row gy-5">
+          <div class="d-flex justify-content-between align-items-center">
+            <div class="btn-group">
+              <!-- Ссылка на редактирование, показывается только автору записи.
+              Эту ссылку вы подключите в финальном задании спринта -->
+              {% if user.is_authenticated %}
+                {% if post.author == user %}
+                  <a class="btn btn-success" href="{% url 'post_edit' user.username post.id %}" role="button">
+                    Редактировать
+                  </a>
+                {% else %}
+                  <a class="btn btn-info" href="{% url 'post' post.author.username post.id %}" role="button">
+                    Добавить комментарий
+                  </a>
+                {% endif %}
+              {% endif %}
+            </div>
         </div>
+      </div>
+
+      
         <!-- Дата публикации  -->
         <small class="text-muted">{{ post.pub_date }}</small>
       </div>
