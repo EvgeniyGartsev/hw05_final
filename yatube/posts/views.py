@@ -16,7 +16,7 @@ from yatube.settings import POST_NUMBER
 
 def index(request):
     '''Show last posts'''
-    posts = get_list_or_404(Post)
+    posts = Post.objects.all()
     paginator = Paginator(posts, POST_NUMBER)
     # из url извлекаем номер запрошенной страницы
     page_number = request.GET.get("page")

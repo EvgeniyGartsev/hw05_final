@@ -5,19 +5,29 @@
 Python, Django, Django ORM.
 
 ## Запуск проекта
-1. Клонировать репозиторий и перейти в него в командной строке:
+1. Клонировать репозиторий и перейти в него в командной строке
+
 git clone https://github.com/EvgeniyGartsev/hw05_final
 cd hw05_final
 
-2. Cоздать и активировать виртуальное окружение:
-python3 -m venv venv source venv/Scripts/activate
+2. Cоздать и активировать виртуальное окружение
 
-3. Обновить pip и установить зависимости из файла requirements.txt:
+python3 -m venv venv
+source venv/Scripts/activate
+
+3. Обновить pip и установить зависимости из файла requirements.txt
+
 python -m pip install --upgrade pip
 pip install -r requirements.txt
 
-4. Выполнить миграции
+4. Перейти в директорию yatube и создать суперпользователя
+
+python manage.py createsuperuser
+
+5. Выполнить миграции
+
 python manage.py migrate
 
-5. Запустить проект
-python3 manage.py runserver
+6. Запустить проект
+
+python manage.py runserver
