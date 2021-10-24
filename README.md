@@ -17,11 +17,11 @@ source venv/Scripts/activate
 python -m pip install --upgrade pip
 pip install -r requirements.txt
 
-4. Перейти в директорию yatube и создать суперпользователя  
-python manage.py createsuperuser
-
-5. Выполнить миграции  
+4. Выполнить миграции  
 python manage.py migrate
+
+5. Перейти в директорию yatube и создать суперпользователя  
+python manage.py createsuperuser
 
 6. Запустить проект  
 python manage.py runserver
